@@ -1,0 +1,199 @@
+<html>
+<head>
+    <script src="./js/jquery-1.6.2.min.js" type="text/javascript"></script>
+    <style style="text/css">
+        .level1 {
+            border: 1px solid blue;
+        }
+
+        .level2 {
+            border: 1px solid red;
+        }
+
+        .level3 {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<form id="mainForm">
+    <table class='level1' parentName="">
+        <tbody>
+        <tr class='Tr0' level="lv1">
+            <td>
+                字段Id0：<input type="text" name="LvOne[0].id"/>
+                <table class='level2'>
+                    <tbody parentName="LvOne[0]">
+                    <tr class='Tr0' level="lv2">
+                        <td>
+                            二级字段Id0：<input type="text" name="LvOne[0].LvTwo[0].id"/>
+
+                            <table class='level3'>
+                                <tbody parentName="LvOne[0].LvTwo[0]">
+                                <tr class='Tr0' level="lv3">
+                                    <td>
+                                        三级字段Id0：<input type="text" name="LvOne[0].LvTwo[0].LvTri[0].id"/>
+                                    </td>
+                                    <td>
+                                        <a href="javascript:void(0);" onclick="addLevelTri(this);">+</a>
+                                    </td>
+                                </tr>
+                                <tbody>
+                            </table>
+
+                        </td>
+                        <td>
+                            <a href="javascript:void(0);" onclick="addLevelTwo(this);">+</a>
+                        </td>
+                    </tr>
+                    <tbody>
+                </table>
+            </td>
+            <td>
+                <a href="javascript:void(0);" onclick="addLevelOne(this);">+</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <input type="button" onclick="seriForm();" value="序列化表单"/>
+</form>
+<script type="text/javascript">
+    $(function () {
+
+    });
+
+    /**
+     * 序列化表单
+     */
+    function seriForm() {
+        var formData = $('#mainForm').serialize();
+        console.log(decodeURI(formData));
+    }
+
+    var opSelectorStr = '.op';
+    var delConfirmText = '是否确认删除？';
+
+    var regCurrentIndex = /\$currentIndex\$/g;
+    var regCurrentParentName = /\$currentParentName\$/g;
+
+    function addLevelBlock(obj, sourceHtml, currentTrSelectorStr) {
+        var $currentBlock = $(obj)
+            .parent() /* td */
+            .parent() /* tr */
+            .parent() /* tbody */;
+
+        var currentIndex = $currentBlock.find(currentTrSelectorStr).size();
+
+        var appendHtml = sourceHtml.replace(regCurrentIndex, String(currentIndex));
+
+        var currentParentName = $currentBlock.attr('parentName');
+        if (!!currentParentName) {
+            appendHtml = appendHtml.replace(regCurrentParentName, currentParentName);
+        }
+        $currentBlock.find(opSelectorStr).last().hide();
+        $currentBlock.append(appendHtml);
+    }
+
+    function delLevelBlock(obj, currentTrSelectorStr) {
+        if (confirm(delConfirmText)) {
+            var $currentBlock = $(obj)
+                .parent() /* td */
+                .parent() /* tr */
+                .parent() /* tbody */;
+            var currentIndex = $currentBlock
+                .find(currentTrSelectorStr)
+                .size();
+            $currentBlock.find('.Tr' + (currentIndex - 1)).remove();
+            $currentBlock.find(opSelectorStr).last().show();
+        }
+    }
+
+    function addLevelOne(obj) {
+        var sourceHtml =
+            '<tr class="Tr$currentIndex$" level="lv1">'
+            + '<td>'
+            + '字段Id$currentIndex$：<input type="text" name="LvOne[$currentIndex$].id" />'
+            + '<table class="level2">'
+            + '<tbody parentName="LvOne[$currentIndex$]">'
+            + '<tr class="Tr0"  level="lv2">'
+            + '<td>'
+            + '二级字段Id0：<input type="text" name="LvOne[$currentIndex$].LvTwo[0].id" />'
+            + '<table class="level3">'
+            + '<tbody parentName="LvOne[$currentIndex$].LvTwo[0]">'
+            + '<tr class="Tr0" level="lv3">'
+            + '<td>'
+            + '三级字段Id0：<input type="text" name="LvOne[$currentIndex$].LvTwo[0].LvTri[0].id" />'
+            + '</td>'
+            + '<td>'
+            + '<a href="javascript:void(0);" onclick="addLevelTri(this);">+</a>'
+            + '</td>'
+            + '</tr>'
+            + '<tbody>'
+            + '</table>'
+            + '</td>'
+            + '<td>'
+            + '<a href="javascript:void(0);" onclick="addLevelTwo(this);">+</a>'
+            + '</td>'
+            + '</tr>'
+            + '<tbody>'
+            + '</table>'
+            + '</td>'
+            + '<td>'
+            + '<a href="javascript:void(0);"  class="' + opSelectorStr + '" onclick="delLevelOne(this);">-</a>'
+            + '</td>'
+            + '</tr>';
+        addLevelBlock(obj, sourceHtml, 'tr[level="lv1"]');
+    }
+
+    function addLevelTwo(obj) {
+        var sourceHtml =
+            '<tr class="Tr$currentIndex$"  level="lv2">'
+            + '<td>'
+            + '二级字段Id$currentIndex$：<input type="text" name="$currentParentName$.LvTwo[$currentIndex$].id" />'
+            + '<table class="level3">'
+            + '<tbody parentName="$currentParentName$.LvTwo[$currentIndex$]">'
+            + '<tr class="Tr0" level="lv3">'
+            + '<td>'
+            + '三级字段Id0：<input type="text" name="$currentParentName$.LvTwo[$currentIndex$].LvTri[0].id" />'
+            + '</td>'
+            + '<td>'
+            + '<a href="javascript:void(0);" onclick="addLevelTri(this);">+</a>'
+            + '</td>'
+            + '</tr>'
+            + '<tbody>'
+            + '</table>'
+            + '</td>'
+            + '<td>'
+            + '<a href="javascript:void(0);"  class="' + opSelectorStr + '" onclick="delLevelTwo(this);">-</a>'
+            + '</td>'
+            + '</tr>';
+        addLevelBlock(obj, sourceHtml, 'tr[level="lv2"]');
+    }
+
+    function addLevelTri(obj) {
+        var sourceHtml =
+            '<tr class="Tr$currentIndex$"  level="lv3">'
+            + '<td>'
+            + '三级字段Id$currentIndex$：<input type="text" name="$currentParentName$.LvTwo[$currentIndex$].id" />'
+            + '</td>'
+            + '<td>'
+            + '<a href="javascript:void(0);"  class="' + opSelectorStr + '" onclick="delLevelTri(this);">-</a>'
+            + '</td>'
+            + '</tr>';
+        addLevelBlock(obj, sourceHtml, 'tr[level="lv3"]');
+    }
+
+    function delLevelOne(obj) {
+        delLevelBlock(obj, 'tr[level="lv1"]');
+    }
+
+    function delLevelTwo(obj) {
+        delLevelBlock(obj, 'tr[level="lv2"]');
+    }
+
+    function delLevelTri(obj) {
+        delLevelBlock(obj, 'tr[level="lv3"]');
+    }
+</script>
+</body>
+</html>
